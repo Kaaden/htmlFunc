@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0">
+    <title>刮一刮</title>
+    <link rel="stylesheet" href="./lucky.css">
+    </link>
+    <link rel="stylesheet" href="./index.css">
+    </link>
+    <style>
+        #card {
+            height: 100%;
+            font-weight: bold;
+            font-size: 40px;
+            line-height: 100px;
+            text-align: center;
+            background: #FAFAFA;
+        }
+
+        #scratch {
+            width: 300px;
+            height: 100px;
+            margin: 50px auto 0;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="scratch">
+        <div id="card">￥5000000元</div>
+    </div>
+    <script src="./lucky.js" type="text/javascript"></script>
+    <script src="./index.js" type="text/javascript"></script>
+    <script>
+        LuckyCard.case({
+            ratio: .7
+        }, function () {
+            // alert('至于你信不信，我反正不信！');
+            this.clearCover();
+        });
+    </script>
+</body>
+
+</html>
