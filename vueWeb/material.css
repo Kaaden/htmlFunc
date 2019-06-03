@@ -1,0 +1,85 @@
+#app {
+    font-size: 0.16rem;
+    padding: 1rem;
+}
+
+.mater-tab-pane {
+    padding: 0.5rem;
+    background: #fff;
+}
+
+.mater-tab-pane2 {
+    padding: 0.5rem;
+    background: #fff;
+}
+
+.mater-tab-lst {
+    width: 25%;
+    margin-bottom: 0.3rem;
+}
+
+.mater-tab-lst .mater-tab-item .image {
+    width: 2.4rem;
+    height: 2.4rem;
+    display: block;
+}
+
+.mater-tab-item {
+    width: 2.4rem;
+    height: 3.6rem;
+    border-radius: 4px;
+    border: 1px solid #ebeef5;
+    background-color: #fff;
+    overflow: hidden;
+    color: #303133;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, .1);
+    transition: .3s;
+}
+
+.mater-tab-item .link {
+    word-break: break-all;
+    padding: 0.8rem 0.1rem 0.1rem 0.1rem;
+    line-height: 1.5;
+}
+
+.mater-tab-tip {
+    border-radius: 0.05rem;
+    width: 0.7rem;
+    height: 0.25rem;
+    line-height: 0.25rem;
+    text-align: center;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.3);
+    position: absolute;
+    top: 0.24rem;
+    right: 0;
+    transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    -moz-transform: rotate(45deg);
+    -webkit-transform: rotate(45deg);
+    -o-transform: rotate(45deg);
+    font-size: 0.12rem;
+    z-index: 1;
+}
+
+.bottom {
+    position: absolute;
+    bottom: 0.1rem;
+    right: 0.1rem;
+    z-index: 1;
+}
+
+.button {
+    padding: 0;
+    float: right;
+}
+
+.clearfix:before,
+.clearfix:after {
+    display: table;
+    content: "";
+}
+
+.clearfix:after {
+    clear: both
+}

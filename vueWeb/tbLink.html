@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="./material.css">
+    <link rel="stylesheet" href="./base.css">
+    <link rel=" stylesheet " href="https://unpkg.com/element-ui/lib/theme-chalk/index.css ">
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="app" class="f fv">
+        <el-input v-model="link" placeholder="请输入内容" clearable>
+        </el-input>
+        <el-button type="primary" style="margin-top:0.6rem;" @click="uploadMater">提交</el-button>
+
+
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js "></script>
+    <script src="https://unpkg.com/vue/dist/vue.js "></script>
+    <script src="https://unpkg.com/element-ui/lib/index.js "></script>
+    <script src="https://cdn.bootcss.com/axios/0.16.2/axios.js "></script>
+    <script src="http://a.tbcdn.cn/apps/top/x/sdk.js"></script>
+
+    <script>
+        //配置系统参数
+        TOP.init({
+            appKey: "23416550", //appkey
+            appsecret: 'ebbc68fc906b6436f76b4f9cda829976',
+            channelUrl: 'http://www.gretheer.com/about'
+        });
+
+        // 利用原型，给字符串添加常用但js原生不提供的功能，本代码是替换所有子字符串
+        String.prototype.replaceAll = function(s1, s2) {
+            return this.replace(new RegExp(s1, "gm"), s2);
+        }
+
+        //获取url域名
+        var getHost = function(url) {
+            var host = "null";
+            if (typeof url == "undefined" || null == url) {
+                url = window.location.href;
+            }
+            var regex = /.*\:\/\/([^\/]*).*/;
+            var match = url.match(regex);
+            if (typeof match != "undefined") {
+                host = match[1];
+            }
+            return host;
+        };
+
+        let app = new Vue({
+            el: "#app",
+            data: {
+                link: ""
+            },
+            methods: {
+                uploadMater() {
+                    var url = this.link
+                    var host = getHost(url);
+                    //淘宝地址，js调用淘宝接口，支持淘宝，支持天猫
+                    if (host == 'item.taobao.com' || host == 'item.lp.taobao.com' || host == 'item.tmall.com' ||
+                        host == 'detail.tmall.com' || host == 'item.beta.taobao.com') {
+                        var query = url.substring(url.indexOf('?') + 1, url.length);
+                        query = query.replaceAll('&#038;', '%26');
+                        var params = query.split('%26'),
+                            num_iid = 0;
+                        for (var i = 0; i < params.length; i++) {
+                            var items = params[i].split('=');
+                            if (items[0] == 'id' || items[0] == 'item_num' || items[0] == 'item_num_id' ||
+                                items[0] == 'item_id' || items[0] == 'default_item_id' || items[0] ==
+                                'mallstItemId') {
+                                num_iid = items[1];
+                            }
+                        }
+                        if (num_iid == 0) {
+                            alert("解析失败，请填入正确的淘宝地址");
+                            return;
+                        }
+                        TOP.api('rest', 'get', {
+                            method: 'taobao.item.get',
+                            num_iid: num_iid,
+                            fields: 'iid,num_iid,title,nick,pic_url,price,detail_url,list_time,delist_time,cid'
+                        }, function(resp) {
+                            if (resp.error_response) { //taobao 解析失败
+                                alert('解析失败~');
+                                return;
+                            }
+
+                            // 获取相关数据
+                            var item = resp.item;
+
+                            // 淘宝店老板的昵称
+                            alert(item.nick);
+                        });
+                    }
+
+
+                },
+            },
+        })
+    </script>
+</body>
+
+</html>

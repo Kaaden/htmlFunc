@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="./material.css">
+    <link rel="stylesheet" href="./base.css">
+    <link rel=" stylesheet " href="https://unpkg.com/element-ui/lib/theme-chalk/index.css ">
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="app" class="f fv">
+        <el-tabs v-model="activeName2" type="border-card" @tab-click="handleClick">
+
+            <el-tab-pane class="mater-tab-pane" label="上传素材" name="first">
+
+                <div class="f">
+                    <div style="width:1rem">分享内容</div>
+                    <div class="f fv f1">
+
+                        <el-radio-group v-model="vm.radio" @change="changeRadio">
+                            <el-radio :label="1">图片</el-radio>
+                            <el-radio :label="2">视频</el-radio>
+                            <el-radio :label="3">链接</el-radio>
+                        </el-radio-group>
+
+                        <!-- 图片上传 -->
+                        <el-upload v-if="vm.radio==1" :on-success="uploadPay" ref='upload' action="http://wechat.yunbeisoft.com/index_test.php/home/fileupload/upload" list-type="picture-card" method="post" style="margin-top:0.3rem" :before-remove="removeImg" enctype="multipart/form-data"
+                            accept="image/gif,image/jpeg,image/png" :limit='9' :on-exceed="uploadMore">
+                            <i class="el-icon-plus"></i>
+                        </el-upload>
+
+                        <!-- 视频上传 -->
+                        <el-upload v-if="vm.radio==2" ref='upload' :on-success="uploadPay" class="upload-demo" style="margin-top:0.3rem" :on-exceed="uploadMore" :before-remove="removeImg" action="http://wechat.yunbeisoft.com/index_test.php/home/fileupload/upload" :limit="1">
+                            <el-button icon="el-icon-upload2" size="small" type="primary" :disabled="vm.payShow">选择视频</el-button>
+                        </el-upload>
+                        <!-- 链接上传 -->
+                        <el-input v-if="vm.radio==3" v-model="vm.link" placeholder="请输入内容" clearable style="margin-top:0.3rem;width:100%">
+                        </el-input>
+
+                    </div>
+                </div>
+                <div class="f" style="margin-top:0.6rem">
+
+                    <div style="width:1rem">文案内容</div>
+                    <div class="f fv f1">
+
+                        <el-input type="textarea" placeholder="请输入内容" v-model="vm.textarea" style="width:100%;" :rows="8" resize='none'>
+                        </el-input>
+                        <el-button type="primary" style="width:1rem;margin-top:0.6rem;" @click="uploadMater">提交</el-button>
+                    </div>
+                </div>
+            </el-tab-pane>
+
+
+            <el-tab-pane class="mater-tab-pane2" label="素材管理" name="second">
+                <div class="f fw" style="width:100%">
+
+                    <div v-for="(item, index) in vm.list" class="mater-tab-lst">
+                        <div class="mater-tab-item rel">
+                            <span class="mater-tab-tip" v-if="item.type===1&&item.media.length">图文素材</span>
+                            <span class="mater-tab-tip" v-if="item.type===2&&item.media.length">视频素材</span>
+                            <span class="mater-tab-tip" v-if="item.type===3&&item.media.length">链接素材</span>
+                            <span class="mater-tab-tip" v-if="item.media.length==0">文本素材</span>
+
+                            <img :src="item.media[0]" class="image" v-if="item.type===1&&item.media.length" @click="preView(item)" style="cursor: pointer;">
+
+                            <el-dialog :visible.sync="vm.show">
+
+                                <el-carousel :interval="5000" arrow="always" height="5rem">
+                                    <el-carousel-item v-for="o in vm.previewImg" :key="o" style="height:5rem">
+                                        <img :src="o" style="width:100%;display:block" />
+                                    </el-carousel-item>
+                                </el-carousel>
+                            </el-dialog>
+
+                            <video :src="item.media[0]" class="image" controls="controls" v-if="item.type===2&&item.media.length">
+                                您的浏览器不支持 video 标签。
+                            </video>
+
+                            <p class="image link" v-if="item.type===3&&item.media.length">{{item.media[0]}}</p>
+
+                            <div class="image link" v-if="item.media.length==0">
+                                {{item.text}}
+                            </div>
+
+                            <div style="padding:0.1rem;">
+                                <span style="word-break: break-all;line-height: 1.5;" class="line line2" v-if="item.media.length!=0">{{item.text}}</span>
+                            </div>
+                            <div class="bottom clearfix">
+                                <el-button type="text" class="button" @click="marterDel(item.id)">删除</el-button>
+                                <el-button type="text" class="button" @click="marterEdit(item,index)" style="margin-right:0.3rem">编辑</el-button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <el-pagination background layout="prev, pager, next" :total="vm.num" @current-change="changeMater">
+                </el-pagination>
+
+                <el-dialog title="收货地址" :visible.sync="vmEdit.show">
+                    <el-form>
+                        <el-form-item label="分享内容">
+                            <el-radio-group v-model="vmEdit.radio" @change="changeRadio">
+                                <el-radio :label="1">图片</el-radio>
+                                <el-radio :label="2">视频</el-radio>
+                                <el-radio :label="3">链接</el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+
+                        <el-form-item label="图片上传" v-if="vmEdit.radio==1">
+                            <el-upload :on-success="uploadPay" ref='upload' action="http://wechat.yunbeisoft.com/index_test.php/home/fileupload/upload" list-type="picture-card" method="post" :before-remove="removeImg" enctype="multipart/form-data" accept="image/gif,image/jpeg,image/png"
+                                :limit='9' :on-exceed="uploadMore" :disabled="vmEdit.use" :show-file-list="false">
+                                <i class="el-icon-plus"></i>
+                            </el-upload>
+                        </el-form-item>
+                        <el-form-item label="视频上传" v-if="vmEdit.radio==2">
+                            <el-upload ref='upload' :on-success="uploadPay" class="upload-demo" :before-remove="removeImg" action="http://wechat.yunbeisoft.com/index_test.php/home/fileupload/upload" :show-file-list="false">
+                                <el-button icon="el-icon-upload2" size="small" type="primary">选择视频</el-button>
+                            </el-upload>
+                        </el-form-item>
+                        <el-form-item label="链接" v-if="vmEdit.radio==3">
+                            <el-input v-model="vmEdit.link" placeholder="请输入内容" clearable style="width:100%">
+                            </el-input>
+                        </el-form-item>
+
+                        <el-form-item v-if="vmEdit.media.length&&vmEdit.radio!=3">
+                            <p>已上传</p>
+                            <div class="f fj fc" v-for="(item,index) in vmEdit.media">
+                                <p>{{item}}</p>
+                                <i class="el-icon-delete" style="cursor: pointer;" @click="delImg(index)"></i>
+                            </div>
+                        </el-form-item>
+                        <el-form-item label="文案内容">
+                            <el-input placeholder="请输入内容" v-model="vmEdit.textarea" clearable>
+                            </el-input>
+                        </el-form-item>
+
+                    </el-form>
+                    <div slot="footer" class="dialog-footer">
+                        <el-button @click="editChange(false)">取 消</el-button>
+                        <el-button type="primary" @click="editChange(true)">确 定</el-button>
+                    </div>
+                </el-dialog>
+
+            </el-tab-pane>
+        </el-tabs>
+
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js "></script>
+    <script src="https://unpkg.com/vue/dist/vue.js "></script>
+    <script src="https://unpkg.com/element-ui/lib/index.js "></script>
+    <script src="https://cdn.bootcss.com/axios/0.16.2/axios.js "></script>
+    <script>
+        const host = 'http://wechat.yunbeisoft.com/index_test.php/home/'
+        const addr = {
+            upload: host + "fileupload/upload",
+            materialCommonSet: host + "MaterialCommon/materialCommonSet",
+            materialCommonList: host + 'MaterialCommon/materialCommonList',
+            materialCommonDelete: host + "MaterialCommon/materialCommonDelete",
+        }
+        const config = {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        }
+        const configUp = {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        }
+        let app = new Vue({
+            el: "#app",
+            data: {
+                vm: {
+                    show: false,
+                    radio: 1,
+                    imgs: [],
+                    imgurls: [],
+                    videos: [],
+                    videoUrls: [],
+                    textarea: '',
+                    link: "",
+                    payShow: false,
+                    list: [],
+                    num: 1,
+                    pageindex: 1,
+                    previewImg: []
+                },
+                activeName2: 'first',
+                vmEdit: {
+                    id: 0,
+                    textarea: "",
+                    media: [],
+                    radio: 1,
+                    show: false,
+                    use: false,
+                    link: "",
+                }
+            },
+            methods: {
+                preView(item) {
+                    this.vm.previewImg = item.media
+                    this.vm.show = true
+                },
+                // 重置vm数据
+                resetVm(e) {
+                    return Object.assign(this.vm, {
+                        radio: e,
+                        imgs: [],
+                        imgurls: [],
+                        videos: [],
+                        videoUrls: [],
+                        textarea: '',
+                        link: "",
+                        payShow: false,
+                    })
+                },
+                //选择图片后上传至服务器
+                async uploadPay(response, file, fileList) {
+                    let type = ""
+                    if (this.vmEdit.show) {
+                        type = this.vmEdit.radio == 1 ? "image" : "video";
+                    } else {
+                        type = this.vm.radio == 1 ? "image" : "video";
+                    }
+
+                    let formData = new FormData();
+                    formData.append('file', file.raw);
+                    formData.append("type", type)
+                    this.formData = formData
+                    let info = await axios.post(addr.upload, formData, configUp)
+                    if (info.data.error === false) {
+                        if (this.vmEdit.show && this.vmEdit.radio == 1) {
+                            this.vmEdit.media.push(info.data.data[0].url)
+                            this.vmEdit.media.length >= 9 ? this.vmEdit.use = true : this.vmEdit.use =
+                                false
+                            return;
+                        }
+                        if (this.vmEdit.show && this.vmEdit.radio == 2) {
+                            this.vmEdit.media = []
+                            this.vmEdit.media.push(info.data.data[0].url)
+                            return;
+                        }
+                        if (this.vm.radio === 1) {
+                            this.vm.imgurls.push({
+                                uid: file.raw.uid,
+                                url: info.data.data[0].url
+                            })
+                            this.vm.imgs.push(info.data.data[0].url)
+                            this.vm.imgs.length >= 9 ? this.vm.payShow = true : this.vm.payShow = false
+                        } else {
+                            this.vm.videoUrls.push({
+                                uid: file.raw.uid,
+                                url: info.data.data[0].url
+                            })
+                            this.vm.videos.push(info.data.data[0].url)
+                            this.vm.videos.length >= 1 ? this.vm.payShow = true : this.vm.payShow = false
+                        }
+                    } else {
+                        this.$message({
+                            message: '请重新在上传',
+                            type: 'warning'
+                        });
+                    }
+
+                },
+                //限制选择
+                uploadMore(file, filelst) {
+                    if ((this.vm.radio == 1 || this.vmEdit.radio == 1) && filelst.length >= 9) {
+                        this.$message({
+                            message: '图片最多上传9张',
+                            type: 'warning'
+                        });
+                    }
+
+                },
+                //radio选择重置数据
+                changeRadio(e) {
+                    if (e == 3) {
+                        return;
+                    }
+                    this.$refs.upload.clearFiles();
+                    this.vm = this.resetVm(e)
+                    if (this.vmEdit.show) {
+                        this.vmEdit = Object.assign(this.vmEdit, {
+                            textarea: "",
+                            media: [],
+                            link: "",
+                        })
+                    }
+                },
+                // 删除图片或视频
+                removeImg(file) {
+                    let ep = this.vm
+                    let array = ep.radio == 1 ? ep.imgurls : ep.videoUrls
+                    let arrays = ep.radio == 1 ? ep.imgs : ep.videos
+                    for (let i = 0, len = array.length; i < len; i++) {
+                        if (array[i].uid === file.uid) {
+                            array.splice(i, 1)
+                            arrays.splice(i, 1)
+                            break;
+                        }
+                    }
+                    ep.radio === 1 ? this.vm.imgurls = array : this.vm.videoUrls = array
+                    ep.radio === 1 ? this.vm.imgs = arrays : this.vm.videos = arrays
+                    this.vm.imgs.length >= 9 ? this.vm.payShow = true : this.vm.payShow = false
+                    this.vm.videos.length >= 1 ? this.vm.payShow = true : this.vm.payShow = false
+                },
+                // 数据提交后台
+                async uploadMater() {
+                    let ep = this.vm
+                    let media = []
+                    if (ep.radio === 1) {
+                        media = ep.imgs
+                    } else if (ep.radio === 2) {
+                        media = ep.videos
+                    } else {
+                        media.push(this.vm.link)
+                    }
+                    let tmp = JSON.stringify({
+                        media,
+                        op: "create",
+                        type: ep.radio,
+                        text: ep.textarea
+
+                    })
+                    axios.post(addr.materialCommonSet, tmp, config).then(data => {
+                        if (data.data.error === false) {
+                            if (this.vm.radio != 3) {
+                                this.$refs.upload.clearFiles();
+                            }
+                            this.vm = this.resetVm(1)
+                            this.$message({
+                                message: '提交成功',
+                                type: 'success'
+                            });
+                        } else {
+                            this.$message.error('提交失败');
+                        }
+                    })
+                },
+                //tab页选择
+                handleClick(tab, event) {
+                    this.$refs.upload.clearFiles();
+                    this.vm = this.resetVm(1)
+                    if (Number(tab.index) === 1) {
+                        this.materLst(this.vm.pageindex)
+                    }
+                },
+                //素材列表请求
+                async materLst(pageNo) {
+                    let tmp = JSON.stringify({
+                        pageNo,
+                        ispage: 1,
+                        pageSize: 10,
+                    })
+
+                    let data = await axios.post(addr.materialCommonList, tmp, config)
+                    let res = data.data.data
+                    if (res.list.length) {
+                        for (let i = 0, len = res.list.length; i < len; i++) {
+                            res.list[i].media = JSON.parse(res.list[i].media)
+                            res.list[i].type = Number(res.list[i].type)
+                        }
+                    }
+                    this.vm.list = data.data.error === false ? res.list : []
+                    this.vm.num = data.data.error === false ? Number(res.total) : 1
+                },
+                //分页
+                changeMater(e) {
+                    this.vm.pageindex = e
+                    this.materLst(e)
+                },
+                // 删除
+                marterDel(e) {
+                    let tmp = JSON.stringify({
+                        id: e,
+                    })
+                    axios.post(addr.materialCommonDelete, tmp, config).then(data => {
+                        if (data.data.error === false) {
+                            this.materLst(this.vm.pageindex)
+                            this.$message({
+                                message: '删除成功',
+                                type: 'success'
+                            });
+                        } else {
+                            this.$message.error('删除失败');
+                        }
+                    })
+                },
+                // 编辑
+                marterEdit(item, index) {
+                    let radio = 1;
+                    switch (item.type) {
+                        case 1:
+                            radio = 1;
+                            break;
+                        case 2:
+                            radio = 2;
+                            break;
+                        case 3:
+                            this.vmEdit.link = item.media[0]
+                            radio = 3;
+                            break;
+                    }
+                    this.vmEdit.id = item.id
+                    this.vmEdit.radio = radio
+                    this.vmEdit.show = true
+                    this.vmEdit.media = item.media
+                    this.vmEdit.textarea = item.text
+                },
+                //删除已上传的图片
+                delImg(index) {
+                    let array = []
+                    for (let i = 0, len = this.vmEdit.media.length; i < len; i++) {
+                        if (this.vmEdit.media[i] != this.vmEdit.media[index]) {
+                            array.push(this.vmEdit.media[i])
+                        }
+                    }
+                    this.vmEdit.media = array
+                },
+                // 更改
+                editChange(isTrue) {
+                    if (isTrue == false) {
+                        this.vmEdit.show = false;
+                        return;
+                    }
+
+                    let tmp = JSON.stringify({
+                        media: this.vmEdit.media,
+                        op: "edit",
+                        type: this.vmEdit.radio,
+                        text: this.vmEdit.textarea,
+                        id: this.vmEdit.id
+
+                    })
+                    axios.post(addr.materialCommonSet, tmp, config).then(async data => {
+                        if (data.data.error === false) {
+                            if (this.vm.radio != 3) {
+                                this.$refs.upload.clearFiles();
+                            }
+                            await this.materLst(this.vm.pageindex)
+                            this.vmEdit.show = false
+                            this.$message({
+                                message: '更新成功',
+                                type: 'success'
+                            });
+                        } else {
+                            this.$message.error('更新失败');
+                        }
+                    })
+                }
+
+
+            },
+            mounted() {
+                var deviceWidth = $(document).width();
+                if (deviceWidth > 1920) {
+                    deviceWidth = 1920;
+                }
+                var fontSize = deviceWidth / 19.2;
+                $("html").css("fontSize", fontSize);
+                console.log(fontSize)
+            },
+
+        })
+    </script>
+</body>
+
+</html>
