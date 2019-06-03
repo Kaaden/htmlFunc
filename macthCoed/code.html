@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <title>有客来 兑换码生成器</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+    <meta name="description" content="兑换码生成器 - Random Password Generator">
+
+    <link rel="stylesheet" href="./pure-min.css">
+    <link rel="stylesheet" href="./app.css">
+
+    <style>
+        #main {
+            max-width: 400px;
+        }
+        
+        ul {
+            margin: 0;
+            padding: 0;
+            border-top: 1px solid #eee;
+            list-style: none;
+            font-size: 14px;
+        }
+        
+        li {
+            clear: both;
+            overflow: hidden;
+            padding: .5em 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .pure-form label {
+            display: block;
+            overflow: hidden;
+            margin: 0;
+        }
+        
+        .pure-form span {
+            float: left;
+            margin: 6px 0;
+        }
+        
+        input {
+            float: right;
+            margin-top: 9px;
+        }
+        
+        #special_characters,
+        #exclude_characters,
+        #password_length,
+        #password_quantity {
+            margin-top: 0;
+            width: 5em;
+            text-align: right;
+        }
+        
+        #special_characters,
+        #exclude_characters {
+            width: 60%;
+        }
+        
+        #generate {
+            margin: 1em 0;
+        }
+        
+        #output {
+            font-family: Monaco, Menlo, Consolas, Inconsolata, 'Deja Vu Sans Mono', 'Droid Sans Mono', 'Lucida Console', 'Courier New', Courier, monospace;
+        }
+    </style>
+</head>
+
+<body>
+
+
+    <div id="header">
+        <h1>有客来 随机兑换码生成器</h1>
+        <h2>Random Password Generator</h2>
+    </div>
+
+    <form id="main" class="pure-form">
+        <ul>
+            <li><label><input type="checkbox" name="include_number" checked=""><span>数字</span></label></li>
+            <li><label><input type="checkbox" name="include_lowercaseletters" checked=""><span>小写字母</span></label></li>
+            <li style="display:none"><label><input type="checkbox" name="include_uppercaseletters" checked=""><span>大写字母</span></label></li>
+            <li style="display:none"><label><span>特殊符号</span><input type="text" name="special_characters" placeholder="输入需要添加的特殊符号"></label></li>
+            <li style="display:none"><label><span>排除字符</span><input type="text" name="exclude_characters" placeholder="比如：i, l, 1, L, o, 0, O"></label></li>
+            <li style="display:none"><label><input type="checkbox" name="password_unique"><span>字符不重复</span></label></li>
+            <li style="display:none"><label><span>密码长度</span><input name="password_length" value="10"></label></li>
+            <li><label><span>兑换码数量</span><input type="number" id="numcode" name="password_quantity" value="100" min="1" max="2000"></label></li>
+        </ul>
+        <button type="button" id="generate" class="pure-button pure-button-primary pure-input-1">生成兑换码</button>
+        <textarea name="output" class="pure-input-1" cols="40" rows="7" readonly="" id="textArea" style="resize: none;"></textarea>
+        <span id="tip"></span>
+        <button type="button" class="pure-button pure-button-primary pure-input-1" onclick="copyText()" id="btnCopy" style="margin-top:20px;">复制</button>
+    </form>
+    <script>
+        var form = document.getElementById('main');
+
+
+        function rand(max) {
+            return Math.floor(Math.random() * max);
+        }
+
+        document.getElementById('generate').onclick = function() {
+            var chars = '';
+            var passwords = [];
+            var passwordUnique = form.password_unique.checked;
+            var quantity = Number(form.password_quantity.value);
+            if (quantity > 2000) {
+                document.getElementById("numcode").value = '2000'
+                alert("兑换码数量不能超过2000");
+                return;
+            }
+            if (form.include_number.checked === false && form.include_lowercaseletters.checked === false) {
+                alert("请先选择功能");
+                return;
+            }
+            if (form.include_number.checked) chars += '0123456789';
+            if (form.include_lowercaseletters.checked) chars += 'abcdefghijklmnopqrstuvwxyz';
+            if (form.include_uppercaseletters.checked === false) chars += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            if (form.special_characters.value) chars += form.special_characters.value;
+            if (form.exclude_characters.value) chars = chars.replace(new RegExp(form.exclude_characters.value.split(
+                '').join('|'), 'g'), '');
+
+            while (passwords.length < quantity) {
+                var _chars = chars.split('');
+                var password = '';
+
+                for (var i = 0, l = form.password_length.value; i < l; i++) {
+                    if (_chars.length < 1) break;
+
+                    var idx = rand(_chars.length);
+                    password += _chars[idx];
+                    if (passwordUnique) _chars.splice(idx, 1);
+                }
+
+                if (passwords.indexOf(password) === -1) passwords.push(password);
+            }
+
+            form.output.value = passwords.join('\n');
+        };
+
+        form.output.onfocus = function() {
+            this.select();
+        };
+
+
+
+
+
+
+        function copyText() {
+            var text = document.getElementById("textArea").value;
+            if (text === "") {
+                alert("请先生成");
+                return;
+            }
+            document.getElementById("textArea").select(); // 选中文本
+            document.execCommand("copy", "true"); // 执行浏览器复制命令
+            document.getElementById("textArea").value = "已复制完成，请返回系统粘贴"
+        }
+    </script>
+
+</body>
+
+</html>
