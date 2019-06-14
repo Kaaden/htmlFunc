@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+    <script src="./sha1.js" type="text/ecmascript"></script>
+    <script>
+        window.onload = function () {
+            let t = makeKey()
+            var sha = hex_sha1(t)
+            console.log("t:" + t)
+            // console.log("time:"+)
+            console.log(sha)
+        }
+        function makeKey() {
+            const str = "0123456789"
+            const len = str.length
+            let _d = new Date()
+            let strMath = ""
+            for (let i = 0; i < 5; i++) {
+                let math = Math.floor(Math.random() * len - 1)
+                if (math < 0) {
+                    math = 0
+                }
+                strMath += str.substr(math, 1)
+            }
+            console.log("time:" + _d.getTime())
+            console.log("strMath:" + strMath)
+            let dataMath = strMath + "|" + "123456" + "|" + _d.getTime()
+            return dataMath
+        }
+
+    </script>
+</body>
+
+</html>
