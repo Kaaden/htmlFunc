@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" />
+
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" type="text/css" href="./index.css">
+</head>
+
+<body>
+    <div class="header">
+        <p class="title">我校组织开展师德师风教育培训</p>
+        <div class="header-main f fc">
+            <div class="f fc" style="margin-right: 0.625rem">
+                <img src="./img/icon_see.png" class="logo-img" />
+                <span class="logo-title" id="seeView">0</span>
+            </div>
+            <div class=" f fc">
+                <img src="./img/icon_time.png" class="logo-img" />
+                <span class="logo-title">2019-09-12 12:12</span>
+            </div>
+        </div>
+    </div>
+    <div class="main">
+        <img src="./img/pic_tzgg.png" style="height:10rem" />
+        <div class="desc">
+
+            1月19日，学校在广州校区第二工业实训中心903、南海校区图书馆报告厅同步召开教师“师德师风教育”全员培训。副校长李丽参加会议并发表讲话。各二级学院专任教师、辅导员、科员、教务员、实验员等近800余人参加了会议。
+            李丽作了题为《弘扬高尚师德
+            潜心立德树人》的主题讲话。她认为从立德树人的使命而言，高校教师的职业道德比任何职业道德的要求都要高，师德师风建设必然是高校师资队伍建设的的关键和核心，强调师德师风建设是是一项系统的长期工程，并就进一步加强我校师德师风建设提出：提高政治站位，把握时代新使命；坚守三尺讲台，坚持率先垂范；奖惩分明，继续强化师德师。
+
+        </div>
+    </div>
+</body>
+<script src="./js/jquery-3.4.1.min.js"></script>
+<script>
+    const url = "http://112.74.165.103:8070/"
+    window.onload = function () {
+        let articleId = ""
+        const href = window.location.href
+        const getList = href.split("_")
+        if (getList && getList.length === 2) {
+            const getUrl = getList[1].split(".")
+            if (getUrl && getUrl.length) {
+                articleId = getUrl[0]
+            }
+        }
+        if (!articleId) {
+            return
+        }
+        $.ajax({
+            type: "Post",
+            url: url + "api/tcArticle/readArticle",
+            dataType: "json",
+            contentType: "application/json",
+            data: JSON.stringify({ articleId, logType: "read" }),
+            success: function (result) {
+                console.log(result)
+            }
+        });
+        $.ajax({
+            type: "Post",
+            url: url + "api/tcArticle/getCountView/" + articleId,
+            dataType: "json",
+            contentType: "application/json",
+            success: function (result) {
+                console.log(result)
+                if (result.code === "0") {
+                    document.getElementById("seeView").innerText = result.data
+                }
+            }
+        });
+
+
+
+    }
+</script>
+
+</html>
